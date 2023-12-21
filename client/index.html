@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>Long polling over TCP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Список ответов long polling'а</h1>
+
+        <ol
+            id="responses-list"
+            class="list"
+        >
+
+        </ol>
+
+        <div class="buttons">
+            <button
+                id="start-btn"
+                class="button"
+                onclick="startServerConnection()"
+            >
+                Начать соединение с сервером
+            </button>
+            <button
+                id="end-btn"
+                class="button"
+                onclick="endServerConnection()"
+                disabled
+            >
+                Закончить соединение с сервером
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js" type="application/javascript"></script>
+</body>
+
+</html>

@@ -1,0 +1,67 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body, ol, h1 {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, serif;
+    background-color: rgb(175, 218, 239);
+}
+
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.buttons {
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.button {
+    padding: 8px 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    background-color: rgb(80, 135, 238);
+    color: #fff;
+}
+
+.list {
+    font-size: 18px;
+    list-style-position: inside;
+}
+
+.list li {
+    margin-top: 10px;
+}
+
+.list li:first-child {
+    margin-top: 0;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.button:disabled {
+    cursor: default;
+    background-color: #99B1EEFF;
+}
