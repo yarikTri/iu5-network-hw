@@ -4,12 +4,19 @@ const { v4: uuidV4 } = require('uuid')
 
 const SERVER_PORT = 8080
 
-const POLLING_INTERVAL_MS = 100
+const POLLING_INTERVAL_MS = 250
 const RESPONSE_TIMEOUT_MS = 30000
 
 const app = express()
 app.use(express.json())
 app.use(express.static(path.join(__dirname, '../client')))
+app.use(function(req, res, next) { // cors middleware
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Credentials', 'true')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With')
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET, PUT')
+    next()
+});
 
 COUNTER_FIELD = 'count'
 TOTAL_COUNTER_FIELD = 'total_count'
@@ -32,16 +39,19 @@ app.get('/', (_, res) => res.sendFile(path.join(__dirname, 'client', 'index.html
 app.post('/connect', (req, res) => {
     try {
         const { syn } = req.body
+        console.log(`got syn: ${syn}`)
         if (!syn || isNaN(syn)) { 
             return res.status(400).json({ message: `Невалидный SYN: ${syn}` })
         }
 
-        const newConnectionId = uuidV4()  
+        const newConnectionId = uuidV4()
+        console.log(`launch connection with uuid ${newConnectionId}`)
         connectionsStates[newConnectionId] = new ConnectionState()
 
-        const incrementedSyn = Number(syn) + 1
-        res.json({ incrementedSyn, newConnectionId })
+        const incSyn = Number(syn) + 1
+        return res.status(200).json({ incSyn, newConnectionId })
     } catch (err) {
+        console.log(err.message)
         return res.status(500).json({ message: `Неизвестная ошибка сервера: ${err.message}` })
     }
 })
@@ -52,12 +62,14 @@ app.get('/messages', (req, res) => {
         if (Math.floor(Math.random() * 20) + 1 === 1) return
 
         const { connectionId, messageNumber } = req.query
+        console.log(`getting messages for ${connectionId}`)
         if (!connectionId || !messageNumber) {
             return res.status(400).json({ message: 'Неверные параметры запроса' })
         }
 
         const connection = connectionsStates[connectionId]
         if (!connection) {
+            console.log(req.query)
             return res.status(404).json({ message: 'Несуществующий id соединения' })
         }
 
@@ -67,7 +79,7 @@ app.get('/messages', (req, res) => {
             console.log(`${connectionId}: Poll #${pollNum}`)
             
             if (connection[MESSAGES_FIELD].length !== 0) {
-                clearInterval(interval)
+                clearInterval(pollInterval)
                 connection[COUNTER_FIELD]++
 
                 const message = connection[MESSAGES_FIELD].pop()
@@ -83,7 +95,7 @@ app.get('/messages', (req, res) => {
             clearInterval(pollInterval)
             if (!res.headersSent && connection[MESSAGES_FIELD].length === 0) {
                 return res.json({
-                    message: `Timeout - сообщений для соеднинения с id '${connectionId}' не найдено`,
+                    message: `Timeout - сообщений для соединения с id '${connectionId}' не найдено`,
                     count: connection[COUNTER_FIELD],
                     total_count: connection[TOTAL_COUNTER_FIELD],
                 })
@@ -101,6 +113,8 @@ app.post('/messages', (req, res) => {
             return res.status(400).json({ message: 'Неверное тело запроса: отсутствует connectionId (uuidv4-строка) или newMessages ([]строк)' })
         }
 
+        console.log(`new messages for connection ${connectionId}: ${newMessages}`)
+
         if (!Array.isArray(newMessages)) {
             return res.status(400).json({ message: 'Сообщения должны быть в формате []строк' })
         }
@@ -110,12 +124,13 @@ app.post('/messages', (req, res) => {
             return res.status(400).json({ message: `Соединение с id '${connectionId}' не найдено` })
         }
 
-        for (const message in newMessages) {
+        newMessages.forEach((message) => {
+            console.log(`Push "${message}"`)
             connection[MESSAGES_FIELD].push(message)
             connection[TOTAL_COUNTER_FIELD]++
-        }
+        })
 
-        res.json({ messages: connection["messages"] })
+        res.json({ messages: connection[MESSAGES_FIELD] })
     } catch (err) {
         res.status(500).json({ message: `Неизвестная ошибка сервера: ${err.message}` })
     }

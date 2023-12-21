@@ -20,7 +20,8 @@ const tcpConnect = async () => {
         })
 
         if (resp.status !== 200) {
-            console.error(`Ошибка (${resp.status}) при выполнении запроса: ${resp.body}`)
+            console.log(resp)
+            console.error(`- (${resp.status}) при выполнении запроса: ${resp.body}`)
             node.innerText = 'Не получилось подключиться к серверу'
             list.appendChild(node)
             endServerConnection()
@@ -28,19 +29,19 @@ const tcpConnect = async () => {
         }
 
         const respBody = await resp.json()
-        const respSyn = respBody.syn
+        const respSyn = respBody.incSyn
         if (!respSyn) {
             return console.error(`Ошибка при подключении: ${respBody.message}`)
         }
 
-        if (respSyn !== syn + 1 || !respBody.connectionId) {
+        if (respSyn !== syn + 1 || !respBody.newConnectionId) {
             return console.error(`Полученный SYN - ${respSyn}, но ожидалось - ${syn + 1}`)
         }
 
         console.log('Успешное подключение. SYN и SYN+1 подтверждены.')
         node.innerText = 'Успешное подключение...'
         list.appendChild(node)
-        subscribe(respBody.connectionId)
+        subscribe(respBody.newConnectionId)
     } catch (error) {
         console.error('Ошибка при выполнении запроса:', error.message)
         endServerConnection()
@@ -72,6 +73,7 @@ const subscribe = async (connectionId) => {
         clearTimeout(timeout)
 
         if (resp.status !== 200) {
+            console.log(resp)
             console.error(`Ошибка (${resp.status}) при выполнении запроса: ${resp.body}`)
             node.innerText = 'Ошибка при обращении к серверу'
             list.appendChild(node)
