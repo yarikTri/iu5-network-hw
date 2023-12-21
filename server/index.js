@@ -5,7 +5,7 @@ const { v4: uuidV4 } = require('uuid')
 const SERVER_PORT = 8080
 
 const POLLING_INTERVAL_MS = 250
-const RESPONSE_TIMEOUT_MS = 30000
+const RESPONSE_TIMEOUT_MS = 20000
 
 const app = express()
 app.use(express.json())

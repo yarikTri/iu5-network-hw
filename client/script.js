@@ -38,7 +38,7 @@ const tcpConnect = async () => {
             return console.error(`Полученный SYN - ${respSyn}, но ожидалось - ${syn + 1}`)
         }
 
-        console.log('Успешное подключение. SYN и SYN+1 подтверждены.')
+        console.log('Успешное подключение.')
         node.innerText = 'Успешное подключение...'
         list.appendChild(node)
         subscribe(respBody.newConnectionId)
@@ -56,7 +56,7 @@ const subscribe = async (connectionId) => {
 
         const node = document.createElement('li')
         const timeout = setTimeout(() => {
-            node.innerText = 'Превышено время ожидания ответа от сервера (> 31 c)'
+            node.innerText = 'Превышено время ожидания ответа от сервера (> 20 cекунд)'
             list.appendChild(node)
             abortController.abort()
         }, 31000)
@@ -66,7 +66,6 @@ const subscribe = async (connectionId) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            // body: JSON.stringify({ connectionId, messageNumber: messageNumber + 1}),
             signal: abortSignal,
         })
 
@@ -108,7 +107,7 @@ const subscribe = async (connectionId) => {
             return
         }
 
-        if (countRequest > 2) {
+        if (countRequest > 3) { // 3 retries
             node.innerText = "Сервер не ответил - слишком много неудачных попыток - закрытие соединения"
             list.appendChild(node)
             endServerConnection()
